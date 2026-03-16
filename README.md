@@ -49,7 +49,11 @@ pip install -r requirements.txt
 
 # 设置环境变量
 export QWEATHER_API_KEY="your_api_key"
+export QWEATHER_BASE_URL="your_custom_domain"  # 如果使用自定义域名
 export NEWSAPI_KEY="your_api_key"
+
+# (可选) 启用 AI 分析功能
+export ANTHROPIC_API_KEY="your_anthropic_key"
 
 # 生成日报
 python main.py
@@ -75,6 +79,40 @@ daily-report/
 ├── main.py              # 主程序
 └── requirements.txt     # 依赖
 ```
+
+## 🤖 AI 能力（可选）
+
+日报支持集成 Claude API，提供智能分析：
+
+| 功能 | 说明 |
+|------|------|
+| **新闻摘要** | 为热点新闻生成一句话摘要 |
+| **市场点评** | 基于股市数据生成趋势分析 |
+| **天气建议** | 根据天气生成出行/穿衣建议 |
+| **每日亮点** | 自动提炼今日最重要看点 |
+
+### 启用 AI 功能
+
+1. 获取 Anthropic API Key: https://console.anthropic.com/
+2. 设置环境变量:
+   ```bash
+   export ANTHROPIC_API_KEY="your_key"
+   export ANTHROPIC_MODEL="claude-sonnet-4-6"  # 可选，默认 claude-sonnet-4-6
+   ```
+3. 编辑 `config.json` 启用功能:
+   ```json
+   {
+     "ai": {
+       "enabled": true,
+       "features": {
+         "news_summary": true,
+         "market_trend": true,
+         "weather_advice": true,
+         "daily_insight": true
+       }
+     }
+   }
+   ```
 
 ## 📝 自定义配置
 

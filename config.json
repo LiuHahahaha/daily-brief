@@ -24,5 +24,16 @@
   "news": {
     "sources": ["财联社", "华尔街见闻", "Bloomberg"],
     "max_items": 5
+  },
+  "ai": {
+    "enabled": true,
+    "features": {
+      "news_summary": true,
+      "market_trend": true,
+      "weather_advice": true,
+      "daily_insight": true
+    },
+    "model": "claude-sonnet-4-6",
+    "max_tokens_per_request": 2000
   }
 }

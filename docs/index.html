@@ -1,78 +1,9 @@
-"""
-日报生成器
-"""
-import json
-import os
-from datetime import datetime
-from typing import Dict, List
-from jinja2 import Template
-
-
-class ReportGenerator:
-    """日报生成器"""
-
-    def __init__(self, template_dir: str = None):
-        self.template_dir = template_dir or os.path.join(os.path.dirname(__file__), "templates")
-
-    def get_weather_icon(self, weather: str) -> str:
-        """根据天气返回emoji图标"""
-        icon_map = {
-            "晴": "☀️",
-            "多云": "⛅",
-            "阴": "☁️",
-            "小雨": "🌧️",
-            "中雨": "🌧️",
-            "大雨": "⛈️",
-            "雪": "❄️",
-            "雾": "🌫️",
-            "霾": "😷",
-        }
-        for key, icon in icon_map.items():
-            if key in weather:
-                return icon
-        return "🌤️"
-
-    def get_aqi_color(self, aqi: str) -> str:
-        """根据AQI返回颜色等级"""
-        try:
-            aqi_val = int(aqi)
-            if aqi_val <= 50:
-                return "🟢"
-            elif aqi_val <= 100:
-                return "🟡"
-            elif aqi_val <= 150:
-                return "🟠"
-            else:
-                return "🔴"
-        except:
-            return "⚪"
-
-    def get_uv_icon(self, uv_category: str) -> str:
-        """根据紫外线返回图标"""
-        if "最弱" in uv_category or "弱" in uv_category:
-            return "🟢"
-        elif "中等" in uv_category:
-            return "🟡"
-        else:
-            return "🔴"
-
-    def format_number(self, num, decimal: int = 2) -> str:
-        """格式化数字"""
-        if num is None or num == "-":
-            return "-"
-        try:
-            return f"{float(num):.{decimal}f}"
-        except:
-            return str(num)
-
-    def generate_html(self, data: Dict) -> str:
-        """生成HTML日报"""
-        template_str = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>每日早报 - {{ date }}</title>
+    <title>每日早报 - 2026年03月16日</title>
     <style>
         * {
             margin: 0;
@@ -358,7 +289,7 @@ class ReportGenerator:
     <div class="container">
         <div class="header">
             <h1>📊 每日早报</h1>
-            <div class="date">{{ date }} {{ weekday }}</div>
+            <div class="date">2026年03月16日 星期一</div>
         </div>
 
         <!-- 天气模块 -->
@@ -368,24 +299,58 @@ class ReportGenerator:
                 <span>重点城市天气</span>
             </div>
             <div class="weather-grid">
-                {% for city in weather %}
-                {% if city.success %}
+                
+                
                 <div class="weather-item">
-                    <div class="weather-city">{{ city.name }}</div>
+                    <div class="weather-city">武汉</div>
                     <div class="weather-main">
-                        <span class="weather-icon">{{ city.weather_icon }}</span>
-                        <span class="weather-temp">{{ city.current.temp }}°</span>
+                        <span class="weather-icon">🌫️</span>
+                        <span class="weather-temp">10°</span>
                     </div>
-                    <div class="weather-desc">{{ city.current.weather }} | {{ city.forecast.temp_min }}°~{{ city.forecast.temp_max }}°</div>
+                    <div class="weather-desc">雾 | 9°~10°</div>
                     <div class="weather-details">
-                        <div class="weather-detail">💧 湿度 {{ city.current.humidity }}%</div>
-                        <div class="weather-detail">{{ city.aqi_icon }} 空气 {{ city.air.category }}</div>
-                        <div class="weather-detail">☀️ 紫外线 {{ city.uv.category }}</div>
-                        <div class="weather-detail">🌬️ {{ city.current.wind_dir }}{{ city.current.wind_scale }}级</div>
+                        <div class="weather-detail">💧 湿度 99%</div>
+                        <div class="weather-detail">⚪ 空气 暂无数据</div>
+                        <div class="weather-detail">☀️ 紫外线 最弱</div>
+                        <div class="weather-detail">🌬️ 东北风2级</div>
                     </div>
                 </div>
-                {% endif %}
-                {% endfor %}
+                
+                
+                
+                <div class="weather-item">
+                    <div class="weather-city">东莞</div>
+                    <div class="weather-main">
+                        <span class="weather-icon">☀️</span>
+                        <span class="weather-temp">19°</span>
+                    </div>
+                    <div class="weather-desc">晴 | 18°~27°</div>
+                    <div class="weather-details">
+                        <div class="weather-detail">💧 湿度 77%</div>
+                        <div class="weather-detail">⚪ 空气 暂无数据</div>
+                        <div class="weather-detail">☀️ 紫外线 强</div>
+                        <div class="weather-detail">🌬️ 南风2级</div>
+                    </div>
+                </div>
+                
+                
+                
+                <div class="weather-item">
+                    <div class="weather-city">光山</div>
+                    <div class="weather-main">
+                        <span class="weather-icon">🌫️</span>
+                        <span class="weather-temp">9°</span>
+                    </div>
+                    <div class="weather-desc">雾 | 8°~12°</div>
+                    <div class="weather-details">
+                        <div class="weather-detail">💧 湿度 92%</div>
+                        <div class="weather-detail">⚪ 空气 暂无数据</div>
+                        <div class="weather-detail">☀️ 紫外线 最弱</div>
+                        <div class="weather-detail">🌬️ 东风2级</div>
+                    </div>
+                </div>
+                
+                
             </div>
         </div>
 
@@ -405,20 +370,46 @@ class ReportGenerator:
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in indices.us %}
-                    {% if item.success %}
+                    
+                    
                     <tr>
-                        <td>{{ item.name }}</td>
-                        <td class="number" style="text-align:right">{{ "%.2f"|format(item.price) }}</td>
-                        <td class="number {{ 'up' if item.change > 0 else 'down' if item.change < 0 else 'neutral' }}" style="text-align:right">
-                            {{ "+%.2f"|format(item.change) if item.change > 0 else "%.2f"|format(item.change) }}
+                        <td>道琼斯</td>
+                        <td class="number" style="text-align:right">47050.70</td>
+                        <td class="number up" style="text-align:right">
+                            +492.23
                         </td>
-                        <td class="number {{ 'up' if item.change_pct > 0 else 'down' if item.change_pct < 0 else 'neutral' }}" style="text-align:right">
-                            {{ "+%.2f%%"|format(item.change_pct) if item.change_pct > 0 else "%.2f%%"|format(item.change_pct) }}
+                        <td class="number up" style="text-align:right">
+                            +1.06%
                         </td>
                     </tr>
-                    {% endif %}
-                    {% endfor %}
+                    
+                    
+                    
+                    <tr>
+                        <td>纳斯达克</td>
+                        <td class="number" style="text-align:right">22425.14</td>
+                        <td class="number up" style="text-align:right">
+                            +319.78
+                        </td>
+                        <td class="number up" style="text-align:right">
+                            +1.45%
+                        </td>
+                    </tr>
+                    
+                    
+                    
+                    <tr>
+                        <td>标普500</td>
+                        <td class="number" style="text-align:right">6713.00</td>
+                        <td class="number up" style="text-align:right">
+                            +80.81
+                        </td>
+                        <td class="number up" style="text-align:right">
+                            +1.22%
+                        </td>
+                    </tr>
+                    
+                    
                 </tbody>
             </table>
         </div>
@@ -439,34 +430,23 @@ class ReportGenerator:
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in indices.hk %}
-                    {% if item.success %}
+                    
+                    
                     <tr>
-                        <td>{{ item.name }}</td>
-                        <td class="number" style="text-align:right">{{ "%.2f"|format(item.price) }}</td>
-                        <td class="number {{ 'up' if item.change > 0 else 'down' if item.change < 0 else 'neutral' }}" style="text-align:right">
-                            {{ "+%.2f"|format(item.change) if item.change > 0 else "%.2f"|format(item.change) }}
+                        <td>恒生指数</td>
+                        <td class="number" style="text-align:right">25834.02</td>
+                        <td class="number up" style="text-align:right">
+                            +368.42
                         </td>
-                        <td class="number {{ 'up' if item.change_pct > 0 else 'down' if item.change_pct < 0 else 'neutral' }}" style="text-align:right">
-                            {{ "+%.2f%%"|format(item.change_pct) if item.change_pct > 0 else "%.2f%%"|format(item.change_pct) }}
+                        <td class="number up" style="text-align:right">
+                            +1.45%
                         </td>
                     </tr>
-                    {% endif %}
-                    {% endfor %}
-                    {% for item in indices.cn %}
-                    {% if item.success %}
-                    <tr>
-                        <td>{{ item.name }}</td>
-                        <td class="number" style="text-align:right">{{ "%.2f"|format(item.price) }}</td>
-                        <td class="number {{ 'up' if item.change > 0 else 'down' if item.change < 0 else 'neutral' }}" style="text-align:right">
-                            {{ "+%.2f"|format(item.change) if item.change > 0 else "%.2f"|format(item.change) }}
-                        </td>
-                        <td class="number {{ 'up' if item.change_pct > 0 else 'down' if item.change_pct < 0 else 'neutral' }}" style="text-align:right">
-                            {{ "+%.2f%%"|format(item.change_pct) if item.change_pct > 0 else "%.2f%%"|format(item.change_pct) }}
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
+                    
+                    
+                    
+                    
+                    
                 </tbody>
             </table>
         </div>
@@ -486,45 +466,19 @@ class ReportGenerator:
                     </tr>
                 </thead>
                 <tbody>
-                    {% for fund in funds %}
-                    {% if fund.success %}
-                    <tr>
-                        <td>{{ fund.name }}<br><small style="color:#999">{{ fund.code }}</small></td>
-                        <td class="number" style="text-align:right">{{ fund.nav }}</td>
-                        <td class="number {{ 'up' if fund.daily_change and fund.daily_change.startswith('+') else 'down' if fund.daily_change and fund.daily_change.startswith('-') else 'neutral' }}" style="text-align:right">
-                            {{ fund.daily_change }}
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                 </tbody>
             </table>
         </div>
 
         <!-- AI 洞察 -->
-        {% if ai_insights and ai_insights.enabled %}
-        <div class="card ai-insight">
-            <div class="card-title">
-                <span class="icon">🤖</span>
-                <span>AI 洞察</span>
-            </div>
-            {% if ai_insights.highlight %}
-            <div class="insight-highlight">💡 {{ ai_insights.highlight }}</div>
-            {% endif %}
-            {% if ai_insights.market_comment %}
-            <div class="insight-section">
-                <span class="insight-label">📈 市场</span>
-                <span class="insight-text">{{ ai_insights.market_comment }}</span>
-            </div>
-            {% endif %}
-            {% if ai_insights.weather_advice %}
-            <div class="insight-section">
-                <span class="insight-label">🌤️ 出行</span>
-                <span class="insight-text">{{ ai_insights.weather_advice }}</span>
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}
+        
 
         <!-- 热点资讯 -->
         <div class="card">
@@ -533,55 +487,59 @@ class ReportGenerator:
                 <span>全球热点</span>
             </div>
             <ul class="news-list">
-                {% for news in news_list %}
+                
                 <li class="news-item">
-                    <span class="news-time">{{ news.published }}</span>
+                    <span class="news-time">03-16 23:18</span>
                     <div class="news-content">
-                        <div class="news-title">{{ news.title }}</div>
-                        {% if news.ai_summary %}
-                        <div class="news-ai-summary">🤖 {{ news.ai_summary }}</div>
-                        {% endif %}
-                        <div class="news-source">{{ news.source }}</div>
+                        <div class="news-title">乌克兰教训伊朗再度上演？高盛：谨慎抄底，停火消息或成最佳出货时机</div>
+                        
+                        <div class="news-source">华尔街见闻</div>
                     </div>
                 </li>
-                {% endfor %}
+                
+                <li class="news-item">
+                    <span class="news-time">03-16 22:47</span>
+                    <div class="news-content">
+                        <div class="news-title">阳光保险2025财报透视：多项核心指标增长，寿险新业务价值高增48%</div>
+                        
+                        <div class="news-source">华尔街见闻</div>
+                    </div>
+                </li>
+                
+                <li class="news-item">
+                    <span class="news-time">03-16 22:46</span>
+                    <div class="news-content">
+                        <div class="news-title">1-2月经济喜大于忧，成色几何？</div>
+                        
+                        <div class="news-source">华尔街见闻</div>
+                    </div>
+                </li>
+                
+                <li class="news-item">
+                    <span class="news-time">04-11</span>
+                    <div class="news-content">
+                        <div class="news-title">中芯国际与嘉楠科技合作14nm矿机芯片，知情人士：能否量产要看行情</div>
+                        
+                        <div class="news-source">36氪</div>
+                    </div>
+                </li>
+                
+                <li class="news-item">
+                    <span class="news-time">04-11</span>
+                    <div class="news-content">
+                        <div class="news-title">三大运营商年内推出5G消息</div>
+                        
+                        <div class="news-source">36氪</div>
+                    </div>
+                </li>
+                
             </ul>
         </div>
 
         <div class="footer-note">
-            <p>数据更新时间：{{ update_time }}</p>
+            <p>数据更新时间：2026-03-16 23:30:38</p>
             <p style="margin-top:5px">仅供参考，不构成投资建议</p>
         </div>
     </div>
 </body>
 </html>
-"""
-
-        template = Template(template_str)
-
-        # 处理天气数据
-        for city in data.get("weather", []):
-            if city.get("success"):
-                city["weather_icon"] = self.get_weather_icon(city.get("current", {}).get("weather", ""))
-                city["aqi_icon"] = self.get_aqi_color(city.get("air", {}).get("aqi", "-"))
-
-        # 渲染模板
-        html = template.render(
-            date=data.get("date", datetime.now().strftime("%Y年%m月%d日")),
-            weekday=data.get("weekday", ""),
-            weather=data.get("weather", []),
-            indices=data.get("indices", {"us": [], "hk": [], "cn": []}),
-            funds=data.get("funds", []),
-            news_list=data.get("news", []),
-            ai_insights=data.get("ai_insights", {"enabled": False}),
-            update_time=data.get("update_time", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        )
-
-        return html
-
-    def save_report(self, html: str, output_path: str):
-        """保存日报到文件"""
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(html)
-        print(f"日报已保存: {output_path}")

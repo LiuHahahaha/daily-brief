@@ -9,6 +9,7 @@ from datetime import datetime
 from src.weather_fetcher import WeatherFetcher
 from src.finance_fetcher import FinanceFetcher
 from src.news_fetcher import NewsFetcher
+from src.ai_analyzer import AIAnalyzer
 from src.report_generator import ReportGenerator
 
 
@@ -82,7 +83,32 @@ def main():
     except Exception as e:
         print(f"❌ 资讯获取失败: {e}")
 
-    # 4. 生成日报
+    # 4. AI 分析（可选）
+    ai_config = config.get("ai", {})
+    if ai_config.get("enabled", False):
+        print("\n🤖 正在进行 AI 分析...")
+        try:
+            ai_analyzer = AIAnalyzer(
+                model=ai_config.get("model")
+            )
+
+            # 新闻摘要
+            if ai_config.get("features", {}).get("news_summary", True):
+                report_data["news"] = ai_analyzer.analyze_news(report_data["news"])
+
+            # 生成综合洞察
+            if ai_config.get("features", {}).get("daily_insight", True):
+                ai_insights = ai_analyzer.generate_daily_insight(report_data)
+                report_data["ai_insights"] = ai_insights
+
+            print("✅ AI 分析完成")
+        except Exception as e:
+            print(f"⚠️ AI 分析失败（非关键）: {e}")
+            report_data["ai_insights"] = {"enabled": False}
+    else:
+        report_data["ai_insights"] = {"enabled": False}
+
+    # 5. 生成日报
     print("\n📝 正在生成日报...")
     try:
         generator = ReportGenerator()
