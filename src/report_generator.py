@@ -525,27 +525,27 @@ class ReportGenerator:
             </table>
         </div>
 
-        <!-- 关注基金 -->
-        {% if funds.enabled != False %}
+        <!-- 热门ETF -->
+        {% if funds %}
         <div class="card">
             <div class="card-title">
                 <span class="icon">📈</span>
-                <span>我的关注</span>
+                <span>热门 ETF</span>
             </div>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>基金名称</th>
+                        <th>名称</th>
                         <th style="text-align:right">价格</th>
                         <th style="text-align:right">涨跌</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for fund in funds.watchlist %}
+                    {% for fund in funds %}
                     {% if fund.success %}
                     <tr>
-                        <td>{{ fund.name }}<br><small style="color:#999">{{ fund.code }}</small></td>
-                        <td class="number" style="text-align:right">{{ fund.price }}</td>
+                        <td>{{ fund.name }}<br><small style="color:#999">{{ fund.symbol }}</small></td>
+                        <td class="number" style="text-align:right">${{ "%.2f"|format(fund.price) }}</td>
                         <td class="number {{ 'up' if fund.change_pct > 0 else 'down' if fund.change_pct < 0 else 'neutral' }}" style="text-align:right">
                             {{ "+%.2f%%"|format(fund.change_pct) if fund.change_pct > 0 else "%.2f%%"|format(fund.change_pct) }}
                         </td>
@@ -555,55 +555,6 @@ class ReportGenerator:
                 </tbody>
             </table>
         </div>
-
-        <!-- 热门ETF涨幅榜 -->
-        {% if funds.hot_etfs %}
-        <div class="card">
-            <div class="card-title">
-                <span class="icon">🔥</span>
-                <span>今日热门ETF</span>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>基金</th>
-                        <th style="text-align:right">涨幅</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for fund in funds.hot_etfs %}
-                    {% if fund.success %}
-                    <tr>
-                        <td>{{ fund.name }}<br><small style="color:#999">{{ fund.code }}</small></td>
-                        <td class="number {{ 'up' if fund.daily_change > 0 else 'down' }}" style="text-align:right">
-                            {{ "+%.2f%%"|format(fund.daily_change) if fund.daily_change > 0 else "%.2f%%"|format(fund.daily_change) }}
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-
-        <!-- 行业板块表现 -->
-        {% if funds.sectors %}
-        <div class="card">
-            <div class="card-title">
-                <span class="icon">🏗️</span>
-                <span>板块表现</span>
-            </div>
-            <div class="sector-grid">
-                {% for sector_name, sector_data in funds.sectors.items() %}
-                <div class="sector-item {{ 'up' if sector_data.avg_change > 0 else 'down' }}">
-                    <div class="sector-name">{{ sector_name }}</div>
-                    <div class="sector-change">{{ "+%.2f%%"|format(sector_data.avg_change) if sector_data.avg_change > 0 else "%.2f%%"|format(sector_data.avg_change) }}</div>
-                    <div class="sector-leader">{{ sector_data.leader.name }}</div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
         {% endif %}
 
         <!-- AI 洞察 -->

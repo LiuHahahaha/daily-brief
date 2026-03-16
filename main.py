@@ -19,7 +19,6 @@ except ImportError:
     pass
 from src.weather_fetcher import WeatherFetcher
 from src.finance_fetcher import FinanceFetcher
-from src.enhanced_fund_fetcher import EnhancedFundFetcher
 from src.news_fetcher import NewsFetcher
 from src.hackernews_fetcher import HackerNewsFetcher
 from src.ai_analyzer import AIAnalyzer
@@ -80,17 +79,16 @@ def main():
         indices = config.get("finance", {}).get("indices", [])
         report_data["indices"] = finance_fetcher.get_all_indices(indices)
 
-        # 使用增强版基金获取器
+        # 获取基金/ETF 数据
         fund_config = config.get("finance", {}).get("funds", {})
         if fund_config.get("enabled", True):
-            fund_fetcher = EnhancedFundFetcher()
-            report_data["funds"] = fund_fetcher.get_all_fund_data(config)
-            fund_count = len(report_data["funds"].get("watchlist", []))
-            hot_count = len(report_data["funds"].get("hot_etfs", []))
-            sector_count = len(report_data["funds"].get("sectors", {}))
-            print(f"✅ 基金数据获取完成 (关注{fund_count}只 + 热门{hot_count}只 + {sector_count}个板块)")
+            funds = fund_config.get("watchlist", [])
+            fund_data = finance_fetcher.get_all_funds(funds)
+            report_data["funds"] = fund_data
+            success_count = sum(1 for f in fund_data if f.get("success"))
+            print(f"✅ 基金数据获取完成 ({success_count}/{len(funds)})")
         else:
-            report_data["funds"] = {"enabled": False}
+            report_data["funds"] = []
 
         print("✅ 金融数据获取完成")
     except Exception as e:
