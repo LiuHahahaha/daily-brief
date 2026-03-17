@@ -62,9 +62,17 @@ class NewsFetcher:
             return datetime.now().strftime("%m-%d")
 
     def fetch_cailianshe(self) -> List[Dict]:
-        """获取财联社新闻 - 使用 RSSHub"""
-        url = "https://rsshub.app/cls/telegraph"
-        return self.fetch_from_rss(url, "财联社", max_items=3)
+        """获取财联社新闻 - 使用 RSSHub 或备用源"""
+        urls = [
+            "https://rsshub.app/cls/telegraph",
+            "https://rsshub.rssforever.com/cls/telegraph",
+            "https://rss.shab.fun/cls/telegraph",
+        ]
+        for url in urls:
+            result = self.fetch_from_rss(url, "财联社", max_items=3)
+            if result:
+                return result
+        return []
 
     def fetch_techcrunch(self) -> List[Dict]:
         """获取 TechCrunch 科技新闻"""
@@ -78,14 +86,46 @@ class NewsFetcher:
 
     def fetch_wallstreetcn(self) -> List[Dict]:
         """获取华尔街见闻新闻 - 使用 RSS 源"""
-        # 华尔街见闻实时快讯 RSS
-        url = "https://rsshub.app/wallstreetcn/live"
-        return self.fetch_from_rss(url, "华尔街见闻", max_items=3)
+        urls = [
+            "https://rsshub.app/wallstreetcn/live",
+            "https://rsshub.rssforever.com/wallstreetcn/live",
+            "https://rss.shab.fun/wallstreetcn/live",
+        ]
+        for url in urls:
+            result = self.fetch_from_rss(url, "华尔街见闻", max_items=3)
+            if result:
+                return result
+        return []
 
     def fetch_36kr(self) -> List[Dict]:
-        """获取36氪新闻 - 使用 RSSHub"""
-        url = "https://rsshub.app/36kr/newsflashes"
-        return self.fetch_from_rss(url, "36氪", max_items=3)
+        """获取36氪新闻 - 使用 RSSHub 或备用源"""
+        urls = [
+            "https://rsshub.app/36kr/newsflashes",
+            "https://rsshub.rssforever.com/36kr/newsflashes",
+            "https://rss.shab.fun/36kr/newsflashes",
+        ]
+        for url in urls:
+            result = self.fetch_from_rss(url, "36氪", max_items=3)
+            if result:
+                return result
+        return []
+
+    def fetch_solidot(self) -> List[Dict]:
+        """获取 Solidot 科技新闻"""
+        url = "https://www.solidot.org/index.rss"
+        return self.fetch_from_rss(url, "Solidot", max_items=3)
+
+    def fetch_ithome(self) -> List[Dict]:
+        """获取 IT之家新闻"""
+        urls = [
+            "https://rsshub.app/ithome/ranking/24h",
+            "https://rsshub.rssforever.com/ithome/ranking/24h",
+        ]
+        for url in urls:
+            result = self.fetch_from_rss(url, "IT之家", max_items=3)
+            if result:
+                return result
+        return []
 
     def fetch_newsapi(self, query: str = "finance") -> List[Dict]:
         """使用 NewsAPI 获取新闻"""
@@ -126,6 +166,8 @@ class NewsFetcher:
             ("财联社", self.fetch_cailianshe),
             ("华尔街见闻", self.fetch_wallstreetcn),
             ("36氪", self.fetch_36kr),
+            ("Solidot", self.fetch_solidot),
+            ("IT之家", self.fetch_ithome),
             ("TechCrunch", self.fetch_techcrunch),
             ("The Verge", self.fetch_the_verge),
             ("NewsAPI", self.fetch_newsapi),
