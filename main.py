@@ -142,6 +142,11 @@ def main():
                 model=ai_config.get("model")
             )
 
+            # 翻译英文新闻标题
+            if ai_config.get("features", {}).get("translate_news", True):
+                report_data["news"] = ai_analyzer.translate_news_titles(report_data["news"])
+                print("✅ 新闻翻译完成")
+
             # 新闻摘要
             if ai_config.get("features", {}).get("news_summary", True):
                 report_data["news"] = ai_analyzer.analyze_news(report_data["news"])

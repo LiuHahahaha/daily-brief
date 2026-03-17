@@ -55,6 +55,63 @@ class AIAnalyzer:
 
     # ==================== 可扩展的 AI 功能 ====================
 
+    def translate_news_titles(self, news_items: List[Dict], max_translate: int = 5) -> List[Dict]:
+        """
+        翻译英文新闻标题为中文
+        使用 Claude 进行翻译，保持简洁准确
+        """
+        if not self.enabled or not news_items:
+            return news_items
+
+        # 筛选出英文新闻（来源包含 HN、TechCrunch、The Verge 等）
+        english_sources = ['HN', 'TechCrunch', 'The Verge', 'Bloomberg', 'Reuters']
+        english_news = []
+        for i, news in enumerate(news_items):
+            if any(src in news.get('source', '') for src in english_sources):
+                english_news.append((i, news))
+            if len(english_news) >= max_translate:
+                break
+
+        if not english_news:
+            return news_items
+
+        system_prompt = """你是专业翻译。将英文科技/财经新闻标题翻译成简洁的中文。
+要求：
+- 准确传达原意
+- 使用中文新闻标题风格（简洁、有吸引力）
+- 保留关键名词（公司名、产品名、人名可保留英文或音译）
+- 控制在 25 字以内"""
+
+        news_text = "\n".join([f"{i+1}. {n['title']}"
+                               for i, (_, n) in enumerate(english_news)])
+
+        user_prompt = f"""请将以下英文新闻标题翻译成中文：
+
+{news_text}
+
+请按以下格式返回（每行一条，只返回翻译后的标题）：
+1. [中文标题]
+2. [中文标题]
+..."""
+
+        response = self._call_api(system_prompt, user_prompt, max_tokens=1000)
+
+        # 解析响应，更新新闻标题
+        if response:
+            translations = [line.strip() for line in response.strip().split("\n") if line.strip()]
+            for idx, (orig_idx, news) in enumerate(english_news):
+                if idx < len(translations):
+                    translation = translations[idx]
+                    # 移除序号前缀
+                    if ". " in translation[:3]:
+                        translation = translation.split(". ", 1)[1]
+                    # 保存原文和译文
+                    news["original_title"] = news["title"]
+                    news["title"] = translation
+                    news["translated"] = True
+
+        return news_items
+
     def analyze_news(self, news_items: List[Dict], max_summary: int = 3) -> List[Dict]:
         """
         AI 新闻摘要分析

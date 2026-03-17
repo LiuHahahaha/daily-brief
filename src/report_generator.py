@@ -593,7 +593,15 @@ class ReportGenerator:
                 <li class="news-item">
                     <span class="news-time">{{ news.published }}</span>
                     <div class="news-content">
-                        <div class="news-title">{{ news.title }}</div>
+                        <div class="news-title">
+                            <a href="{{ news.url }}" target="_blank" rel="noopener" style="color: #333; text-decoration: none;">{{ news.title }}</a>
+                            {% if news.translated %}
+                            <span style="font-size: 11px; color: #667eea; margin-left: 5px;">(译)</span>
+                            {% endif %}
+                        </div>
+                        {% if news.original_title %}
+                        <div style="font-size: 12px; color: #999; margin-top: 2px; font-style: italic;">{{ news.original_title }}</div>
+                        {% endif %}
                         {% if news.ai_summary %}
                         <div class="news-ai-summary">🤖 {{ news.ai_summary }}</div>
                         {% endif %}
