@@ -16,6 +16,24 @@ class NewsFetcher:
     def __init__(self, api_key: str = None):
         self.newsapi_key = api_key or os.getenv("NEWSAPI_KEY")
 
+    def fetch_hackernews(self) -> List[Dict]:
+        """获取 Hacker News 热门文章"""
+        try:
+            from src.hackernews_fetcher import HackerNewsFetcher
+            hn_fetcher = HackerNewsFetcher()
+            news = hn_fetcher.get_front_page(limit=5)
+            # 转换格式以兼容
+            return [{
+                "title": n["title"],
+                "source": n["source"],
+                "published": n["published"],
+                "url": n["url"],
+                "points": n.get("points", 0)
+            } for n in news]
+        except Exception as e:
+            print(f"Hacker News 获取失败: {e}")
+            return []
+
     def fetch_from_rss(self, url: str, source_name: str, max_items: int = 3) -> List[Dict]:
         """从RSS源获取新闻"""
         try:
@@ -132,30 +150,68 @@ class NewsFetcher:
         if not self.newsapi_key:
             return []
 
-        url = "https://newsapi.org/v2/top-headlines"
-        params = {
-            "apiKey": self.newsapi_key,
-            "category": "business",
-            "language": "zh",
-            "pageSize": 5
-        }
+        # 获取科技和商业新闻
+        categories = ["technology", "business"]
+        all_items = []
 
-        try:
-            response = requests.get(url, params=params, timeout=10)
-            data = response.json()
-            items = []
+        for category in categories:
+            url = "https://newsapi.org/v2/top-headlines"
+            params = {
+                "apiKey": self.newsapi_key,
+                "category": category,
+                "language": "en",
+                "pageSize": 3
+            }
 
-            for article in data.get("articles", [])[:3]:
-                items.append({
-                    "title": article.get("title", ""),
-                    "source": article.get("source", {}).get("name", "NewsAPI"),
-                    "published": article.get("publishedAt", "")[5:10] if article.get("publishedAt") else "",
-                    "url": article.get("url", "")
-                })
-            return items
-        except Exception as e:
-            print(f"NewsAPI获取失败: {e}")
-            return []
+            try:
+                response = requests.get(url, params=params, timeout=10)
+                data = response.json()
+
+                for article in data.get("articles", []):
+                    all_items.append({
+                        "title": article.get("title", ""),
+                        "source": f"NewsAPI | {article.get('source', {}).get('name', 'Unknown')}",
+                        "published": article.get("publishedAt", "")[5:10] if article.get("publishedAt") else "",
+                        "url": article.get("url", "")
+                    })
+            except Exception as e:
+                print(f"NewsAPI {category} 获取失败: {e}")
+
+        return all_items[:5]
+
+    def fetch_reuters(self) -> List[Dict]:
+        """获取 Reuters 新闻 - 使用 RSSHub"""
+        urls = [
+            "https://rsshub.app/reuters/business/finance",
+            "https://rsshub.rssforever.com/reuters/business/finance",
+        ]
+        for url in urls:
+            result = self.fetch_from_rss(url, "Reuters", max_items=3)
+            if result:
+                return result
+        return []
+
+    def fetch_bloomberg(self) -> List[Dict]:
+        """获取 Bloomberg 新闻 - 使用 RSSHub"""
+        urls = [
+            "https://rsshub.app/bloomberg/latest",
+            "https://rsshub.rssforever.com/bloomberg/latest",
+        ]
+        for url in urls:
+            result = self.fetch_from_rss(url, "Bloomberg", max_items=3)
+            if result:
+                return result
+        return []
+
+    def fetch_arstechnica(self) -> List[Dict]:
+        """获取 Ars Technica 科技新闻"""
+        url = "https://feeds.arstechnica.com/arstechnica/index"
+        return self.fetch_from_rss(url, "Ars Technica", max_items=3)
+
+    def fetch_wired(self) -> List[Dict]:
+        """获取 Wired 科技新闻"""
+        url = "https://www.wired.com/feed/rss"
+        return self.fetch_from_rss(url, "Wired", max_items=3)
 
     def get_all_news(self, max_items: int = 5) -> List[Dict]:
         """获取所有新闻源"""
@@ -163,14 +219,21 @@ class NewsFetcher:
 
         # 尝试多个数据源（按优先级排序）
         sources = [
+            # 中文新闻源
             ("财联社", self.fetch_cailianshe),
             ("华尔街见闻", self.fetch_wallstreetcn),
             ("36氪", self.fetch_36kr),
             ("Solidot", self.fetch_solidot),
             ("IT之家", self.fetch_ithome),
+            # 国际新闻源
+            ("Hacker News", self.fetch_hackernews),
+            ("Reuters", self.fetch_reuters),
+            ("Bloomberg", self.fetch_bloomberg),
+            ("NewsAPI", self.fetch_newsapi),
+            ("Ars Technica", self.fetch_arstechnica),
+            ("Wired", self.fetch_wired),
             ("TechCrunch", self.fetch_techcrunch),
             ("The Verge", self.fetch_the_verge),
-            ("NewsAPI", self.fetch_newsapi),
         ]
 
         for name, fetch_func in sources:
