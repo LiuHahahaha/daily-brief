@@ -62,54 +62,30 @@ class NewsFetcher:
             return datetime.now().strftime("%m-%d")
 
     def fetch_cailianshe(self) -> List[Dict]:
-        """获取财联社新闻"""
-        # 财联社 RSS
-        url = "https://www.cls.cn/telegraph"
-        # 由于财联社需要JS渲染，这里使用模拟数据或备用源
-        return []
+        """获取财联社新闻 - 使用 RSSHub"""
+        url = "https://rsshub.app/cls/telegraph"
+        return self.fetch_from_rss(url, "财联社", max_items=3)
+
+    def fetch_techcrunch(self) -> List[Dict]:
+        """获取 TechCrunch 科技新闻"""
+        url = "https://techcrunch.com/feed/"
+        return self.fetch_from_rss(url, "TechCrunch", max_items=2)
+
+    def fetch_the_verge(self) -> List[Dict]:
+        """获取 The Verge 科技新闻"""
+        url = "https://www.theverge.com/rss/index.xml"
+        return self.fetch_from_rss(url, "The Verge", max_items=2)
 
     def fetch_wallstreetcn(self) -> List[Dict]:
-        """获取华尔街见闻新闻"""
-        url = "https://api.wallstreetcn.com/apiv1/content/articles?category=global&limit=5"
-        try:
-            response = requests.get(url, timeout=10)
-            data = response.json()
-            items = []
-
-            for item in data.get("data", {}).get("items", [])[:3]:
-                items.append({
-                    "title": item.get("title", ""),
-                    "source": "华尔街见闻",
-                    "published": datetime.fromtimestamp(item.get("display_time", 0)).strftime("%m-%d %H:%M"),
-                    "url": f"https://wallstreetcn.com/articles/{item.get('id', '')}"
-                })
-            return items
-        except Exception as e:
-            print(f"华尔街见闻获取失败: {e}")
-            return []
+        """获取华尔街见闻新闻 - 使用 RSS 源"""
+        # 华尔街见闻实时快讯 RSS
+        url = "https://rsshub.app/wallstreetcn/live"
+        return self.fetch_from_rss(url, "华尔街见闻", max_items=3)
 
     def fetch_36kr(self) -> List[Dict]:
-        """获取36氪新闻"""
-        url = "https://36kr.com/api/newsflash"
-        try:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
-            response = requests.get(url, headers=headers, timeout=10)
-            data = response.json()
-            items = []
-
-            for item in data.get("data", {}).get("items", [])[:3]:
-                items.append({
-                    "title": item.get("title", ""),
-                    "source": "36氪",
-                    "published": item.get("published_at", "")[5:10] if item.get("published_at") else "",
-                    "url": f"https://36kr.com/newsflashes/{item.get('id', '')}"
-                })
-            return items
-        except Exception as e:
-            print(f"36氪获取失败: {e}")
-            return []
+        """获取36氪新闻 - 使用 RSSHub"""
+        url = "https://rsshub.app/36kr/newsflashes"
+        return self.fetch_from_rss(url, "36氪", max_items=3)
 
     def fetch_newsapi(self, query: str = "finance") -> List[Dict]:
         """使用 NewsAPI 获取新闻"""
@@ -145,26 +121,34 @@ class NewsFetcher:
         """获取所有新闻源"""
         all_news = []
 
-        # 尝试多个数据源
+        # 尝试多个数据源（按优先级排序）
         sources = [
-            ("wallstreetcn", self.fetch_wallstreetcn),
-            ("36kr", self.fetch_36kr),
-            ("newsapi", self.fetch_newsapi),
+            ("财联社", self.fetch_cailianshe),
+            ("华尔街见闻", self.fetch_wallstreetcn),
+            ("36氪", self.fetch_36kr),
+            ("TechCrunch", self.fetch_techcrunch),
+            ("The Verge", self.fetch_the_verge),
+            ("NewsAPI", self.fetch_newsapi),
         ]
 
         for name, fetch_func in sources:
             try:
                 news = fetch_func()
-                all_news.extend(news)
+                if news:
+                    print(f"  ✅ {name}: {len(news)}条")
+                    all_news.extend(news)
+                else:
+                    print(f"  ⚠️ {name}: 无数据")
             except Exception as e:
-                print(f"{name} 获取失败: {e}")
+                print(f"  ❌ {name}: {e}")
 
         # 去重并限制数量
         seen_titles = set()
         unique_news = []
         for item in all_news:
-            if item["title"] not in seen_titles:
-                seen_titles.add(item["title"])
+            title = item.get("title", "").strip()
+            if title and title not in seen_titles:
+                seen_titles.add(title)
                 unique_news.append(item)
 
         return unique_news[:max_items]
